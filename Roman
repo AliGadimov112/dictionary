@@ -1,0 +1,95 @@
+import datetime
+
+romanian = {}
+while True:
+    print("\nвыберите действие:")
+    print("1. добавить данные о гражданиене Румынии")
+    print("2. посмтореть информацию о жителе Румынии")
+    print("0. выход")
+    choice = input("введите номер действия:")
+    result = []
+    if choice == "1":
+        last_name = input("введите фамилию").upper()
+        first_name = input("ведите имя").upper()
+        gender = input("введите пол\n")
+        if gender.lower() == "m":
+            print("мужской")
+        elif gender.lower() == "f":
+            print("женский")
+        else:
+            print("неверный ввод , введите только латинские буквы (m или f)")
+        brt_date = datetime.datetime.strptime(input("введите дату рождения в формате ГГГ-ММ-ДД"), "%Y-%m-%d")
+        City_String_Code = input("введите место рождения\n")
+        resident = input("является ли резидентом Румынии (True/False)")
+        if resident.lower() == "True":
+            resident = True
+        elif resident.lower() == "False":
+            resident = False
+        else:
+            print("некорректый ввод")
+            continue
+        City_String_Code = input("введите код города (2 латинские буквы)")
+        year = brt_date.year
+        if year >= 1900 and year <= 1949:
+            result.append(1)
+        if year >= 1950 and year <= 1999:
+            result.append(2)
+        if year >= 1800 and year <= 1849:
+            result.append(3)
+        if year >= 1850 and year <= 1899:
+            result.append(4)
+        if year >= 2000 and year <= 2049:
+            result.append(5)
+        if year >= 2000 and year <= 2099:
+            result.append(6)
+        brt_date_sm = str(brt_date)[2:3]
+        result.append(brt_date_sm)
+        continue
+    city_codes = {}
+    try:
+        with open("Roman.csv", 'r', encoding='utf-8') as file:
+            for line in file:
+                if line.startswith("#"):
+                    continue
+                code, city = line.strip().split(',')
+                city_codes[code] = int(city)
+    except FileNotFoundError:
+        print('файл не найден')
+        continue
+    try:
+        city_code = city_codes[City_String_Code]
+    except KeyError:
+        print("Некорректный код города.")
+        continue
+    cnp = str(result) + str(year)[2:] + f"{brt_date.month:02}" + f"{brt_date.day:02}" + f"{city_code:02}"
+    if gender == "m":
+        cnp += "1"
+    elif gender == "f":
+        cnp += "2"
+    else:
+        print("Некорректный пол")
+        continue
+    control_number = 0
+    for i, digit in enumerate(cnp[:-1]):
+        control_number += int(digit) * int("279146358279"[i])
+    control_number %= 11
+    if control_number == 10:
+        control_number = 1
+    cnp += str(control_number)
+    romanian[cnp] = {"LastName": last_name, "FirstName": first_name, "Gender": gender, "DateOfBirth": brt_date,
+                     "Resident": resident, "CityStringCode": City_String_Code}
+    print(f"CNP успешно сгенерирован: {cnp}")
+elif choice == "2":
+cnp = input("Введите CNP: ")
+if cnp in romanian:
+    print("Информация о гражданине:")
+for key, value in romanian[cnp].items():
+    print(f"{key}: {value}")
+ else:
+  print("Информация о гражданине с таким CNP не найдена.")
+
+elif choice == "0":
+break
+
+else:
+print("Некорректный выбор.")
